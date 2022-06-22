@@ -8,7 +8,7 @@ require(AICcmodavg)
 install.packages('lubridate')
 require(lubridate)
 install.packages('timetk')
-library(timetk)
+require(timetk)
 
 ##################
 # Import dataset #
@@ -85,7 +85,7 @@ ggplot(data = df, aes(x = overallRating, fill = ageGroup)) +
   facet_wrap(~ department)
 
 
-df %>%
+x = df %>%
   group_by(accessRating) %>%
   summarise_by_time(
     .date_var = start,
