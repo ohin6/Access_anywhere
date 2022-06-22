@@ -3,6 +3,12 @@
 ###################
 library(tidyverse)
 library(rms)
+install.packages('AICcmodavg')
+require(AICcmodavg)
+install.packages('lubridate')
+require(lubridate)
+install.packages('timetk')
+library(timetk)
 
 ##################
 # Import dataset #
@@ -37,28 +43,55 @@ df = df%>%
   mutate(overallRating.coded = if_else(overallRating == 'Neither Satisfied nor Dissatisfied', 2, overallRating.coded )) %>%
   mutate(overallRating.coded = if_else(overallRating == 'Satisfied', 3, overallRating.coded )) %>%
   mutate(overallRating.coded = if_else(overallRating == 'Very Satisfied', 4, overallRating.coded)) %>%
-  select(patId:accessRating, accessRating.coded, overallRating, overallRating.coded, everything())
+  select(patId:accessRating, accessRating.coded, overallRating, overallRating.coded, everything()) %>%
+  mutate(accessRating = factor(accessRating, levels = c('Very Dissatisfied', 'Dissatisfied', 'Neither Satisfied nor Dissatisfied', 'Satisfied', 'Very Satisfied'))) %>%
+  mutate(overallRating = factor(overallRating, levels = c('Very Dissatisfied', 'Dissatisfied', 'Neither Satisfied nor Dissatisfied', 'Satisfied', 'Very Satisfied')))
+
+
+df$accessRating = factor(df$accessRating, levels = c('Very Dissatisfied', 'Dissatisfied', 'Neither Satisfied nor Dissatisfied', 'Satisfied', 'Very Satisfied'))
 
 attach(df)
 
-ggplot(data = df) + 
-  geom_bar(aes(accessRating)) + 
-  facet_wrap(~ageGroup)
+#########################################
+# Age groups most satisfied with access #
+#########################################
+
+# plot age group satisfaction
+ggplot(data = df, aes(x = accessRating, fill = ageGroup)) + 
+  geom_bar(position = 'dodge') +
+  theme(axis.text.x = element_text(angle = 45, vjust = 0.5)) + 
+  ggtitle("Patient satisfaction to accessing video appointments") +
+  xlab("Satisfaction") + ylab("count")
+
+# segregate per department 
+ggplot(data = df, aes(x = accessRating, fill = ageGroup)) + 
+  geom_bar(position = 'dodge') + 
+  facet_wrap(~ department)
+
+##################################################
+# Age groups most satisfied with over all rating #
+##################################################
+
+# plot age group satisfaction
+ggplot(data = df, aes(x = overallRating, fill = ageGroup)) + 
+  geom_bar(position = 'dodge') +
+  theme(axis.text.x = element_text(angle = 45, vjust = 0.5)) + 
+  ggtitle("Patient overall experience to video appointments") +
+  xlab("Satisfaction") + ylab("count")
+
+# segregate per department 
+ggplot(data = df, aes(x = overallRating, fill = ageGroup)) + 
+  geom_bar(position = 'dodge') + 
+  facet_wrap(~ department)
 
 
-ggplot(data = df, aes(accessRating)) + 
-  geom_bar(aes(fill = ageGroup))
-
-df %>% filter(ageGroup)
-
-table(accessRating)
-
-
-plot(ageGroup,accessRating)
+df %>%
+  group_by(accessRating) %>%
+  summarise_by_time(
+    .date_var = start,
+    .by       = "month" # Setup for monthly aggregation
+  )
 
 
-describe(df)
 
-table(df$`Would you be happy to use the Video Consultation again?`)
 
-table(df$`Please rate the ease of use for accessing the Video Consultation today?`)
