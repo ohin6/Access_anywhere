@@ -184,7 +184,8 @@ Plot2 = function(accessOrOverall, satisfaction, freq) {
     # tidy data
     # remove stop words
     comment = comment %>%
-      str_replace_all(pattern = stopwords('english'), replacement = "") # remove stop words
+      str_replace_all(pattern = stopwords('english'), replacement = "") #%>%  # remove stop words
+      #str_replace_all(string = x, pattern = '[123456789]', replacement = '') # remove numbers
     
     # other changes
     comment = paste(comment, collapse = " ")
