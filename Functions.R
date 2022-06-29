@@ -1,3 +1,15 @@
+###################
+# Import libraries #
+###################
+
+require(tidytext)
+require(tm)
+require(wordcloud)
+library(tidytext) # For unnest_tokens
+library(stringr) # For managing text
+
+
+
 ##########################################
 # Create function for wordcloud - Access #
 ##########################################
@@ -272,4 +284,5 @@ Plot2 = function(accessOrOverall, satisfaction, freq) {
 }
 ##* look through different satisfaction by changing number in [] from 1 (very
 ##* disasisfied) to 5 (very satisfied) and access/overall satisfaction
-Plot2('overall', levels(df$accessRating)[1], 10)
+Plot2('overall', levels(df$accessRating)[5], 30)
+Plot2('access', levels(df$accessRating)[5], 30)

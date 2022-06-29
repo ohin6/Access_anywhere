@@ -5,7 +5,7 @@
 require(tidytext)
 require(tm)
 require(wordcloud)
-library(tidytext) # For unnest_tokens
+library(tidytext) # For un                                                                                                                                                                                       nest_tokens
 library(stringr) # For managing text
 
 #########################
