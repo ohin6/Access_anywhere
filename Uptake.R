@@ -20,94 +20,209 @@ cons = read_csv('rawData/consultation.csv', skip = 6) %>%
   rename(rejoin = `# Rejoins`) %>%
   rename(waitingArea = `Waiting Area`)
 
+############################
+# Uptake different regions #
+############################
 
+# All Sites all departments
 
-  
 cons %>%
-  filter(year == 2020) %>%
-  ggplot(aes(x=as.Date(`Date`))) +
-  geom_line(aes(fill=..count..), stat="bin", binwidth = 7) + 
+  mutate(site = 'Other') %>%
+  mutate(site = if_else(str_detect(waitingArea, 'AUH') == TRUE, 'AUH', site)) %>%
+  mutate(site = if_else(str_detect(waitingArea, 'BGH') == TRUE, 'BGH', site)) %>%
+  mutate(site = if_else(str_detect(waitingArea, 'RLH') == TRUE, 'RLH', site)) %>%
+  mutate(site = if_else(str_detect(waitingArea, 'LUH') == TRUE, 'LUH', site)) %>%
+  subset(site %in% c('AUH', 'BGH', 'LUH', 'RLH', 'Other')) %>%
+  mutate(site = factor(site, levels = c('AUH', 'BGH', 'LUH', 'RLH', 'Other'))) %>%
+  mutate(Date = as_date(Date)) %>%
+  ggplot(aes(Date)) +
+  geom_freqpoly(binwidth = 7) + 
   scale_x_date(date_breaks = "months", date_labels = "%b") + 
-  main()
+  geom_vline(xintercept = as.numeric(as.Date(c("2021-01-01", "2022-01-01"))), linetype=4) +
+  theme(axis.text.x = element_text(size=8, angle=45)) + 
+  ggtitle("Uptake of Attend Anywhere during 2020-2022") +
+  ylab('Count (per week)') +
+  xlab("Time (Month)")
+
+# Different Sites facet_grid
 
 cons %>%
-  filter(year == 2021) %>%
-  ggplot(aes(x=as.Date(`Date`))) +
-  geom_line(aes(fill=..count..), stat="bin", binwidth = 7) + 
-  scale_x_date(date_breaks = "months", date_labels = "%b")
-
-cons %>%
-  filter(year == 2022) %>%
-  ggplot(aes(x=as.Date(`Date`))) +
-  geom_line(aes(fill=..count..), stat="bin", binwidth = 7) + 
-  scale_x_date(date_breaks = "months", date_labels = "%b")
-
-
-
-  cons %>%
-  mutate(site = str_split_fixed(cons$waitingArea, '/', 2)[,1]) %>%
-  mutate(department = str_split_fixed(cons$waitingArea, '/', 2)[,2]) %>%
-  ggplot(aes(x=as.Date(`Date`))) +
-  geom_line(aes(fill=..count..), stat="bin", binwidth = 7) + 
+  mutate(site = 'Other') %>%
+  mutate(site = if_else(str_detect(waitingArea, 'AUH') == TRUE, 'AUH', site)) %>%
+  mutate(site = if_else(str_detect(waitingArea, 'BGH') == TRUE, 'BGH', site)) %>%
+  mutate(site = if_else(str_detect(waitingArea, 'RLH') == TRUE, 'RLH', site)) %>%
+  mutate(site = if_else(str_detect(waitingArea, 'LUH') == TRUE, 'LUH', site)) %>%
+  mutate(site = factor(site, levels = c('RLH','AUH','BGH', 'LUH', 'Other'))) %>%
+  subset(site %in% c('AUH', 'BGH', 'LUH', 'RLH', 'Other')) %>%
+  mutate(Date = as_date(Date)) %>%
+  ggplot(aes(Date)) +
+  geom_freqpoly(binwidth = 7) + 
   scale_x_date(date_breaks = "months", date_labels = "%b") + 
-  facet_wrap(~ site)
-  
-  cons %>%
-    mutate(site = 'Other') %>%
-    mutate(site = if_else(str_detect(waitingArea, 'AUH') == TRUE, 'AUH', site)) %>%
-    mutate(site = if_else(str_detect(waitingArea, 'BGH') == TRUE, 'BGH', site)) %>%
-    mutate(site = if_else(str_detect(waitingArea, 'RLH') == TRUE, 'RLH', site)) %>%
-    mutate(site = if_else(str_detect(waitingArea, 'LUH') == TRUE, 'LUH', site)) %>%
-    subset(site %in% c('AUH', 'BGH', 'LUH', 'RLH', 'Other')) %>%
-    mutate(site = factor(site, levels = c('AUH', 'BGH', 'LUH', 'RLH', 'Other'))) %>%
-    ggplot(aes(x=as.Date(`Date`))) +
-    geom_line(aes(fill=..count..), stat="bin", binwidth = 7) + 
-    scale_x_date(date_breaks = "months", date_labels = "%b") + 
-    geom_vline(xintercept = 10000, linetype="dotted", 
-               color = "blue", size=1.5) +
-    facet_wrap(~ site) +
-    theme(axis.text.x = element_text(size=8, angle=45))
-    
+  geom_vline(xintercept = as.numeric(as.Date(c("2021-01-01", "2022-01-01"))), linetype=4) +
+  theme(axis.text.x = element_text(size=8, angle=45)) + 
+  facet_grid(site ~ .) +
+  ggtitle("Uptake of Attend Anywhere during 2020-2022 per site") +
+  ylab('Count (per week)') +
+  xlab("Time (Month)")
 
-  cons %>%
-    mutate(site = 'Other') %>%
-    mutate(site = if_else(str_detect(waitingArea, 'AUH') == TRUE, 'AUH', site)) %>%
-    mutate(site = if_else(str_detect(waitingArea, 'BGH') == TRUE, 'BGH', site)) %>%
-    mutate(site = if_else(str_detect(waitingArea, 'RLH') == TRUE, 'RLH', site)) %>%
-    mutate(site = if_else(str_detect(waitingArea, 'LUH') == TRUE, 'LUH', site)) %>%
-    subset(site %in% c('AUH', 'BGH', 'LUH', 'RLH', 'Other')) %>%
-    mutate(site = factor(site, levels = c('AUH', 'BGH', 'LUH', 'RLH', 'Other'))) %>%
-    ggplot(aes(x=as.Date(`Date`))) +
-    geom_line(aes(fill=..count..), stat="bin", binwidth = 7) + 
-    scale_x_date(date_breaks = "months", date_labels = "%b") + 
-    geom_vline(xintercept = as.numeric(as.Date(c("2021-01-01", "2022-01-01"))), linetype=4) +
-    theme(axis.text.x = element_text(size=8, angle=45)) + 
-    ggtitle("Patient uptake of video consultation during 2020-2022") +
-    ylab("patient uptake (count per 7 days)") +
-    xlab("Time (Month)")
-  
-  cons %>%
-    mutate(site = 'Other') %>%
-    mutate(site = if_else(str_detect(waitingArea, 'AUH') == TRUE, 'AUH', site)) %>%
-    mutate(site = if_else(str_detect(waitingArea, 'BGH') == TRUE, 'BGH', site)) %>%
-    mutate(site = if_else(str_detect(waitingArea, 'RLH') == TRUE, 'RLH', site)) %>%
-    mutate(site = if_else(str_detect(waitingArea, 'LUH') == TRUE, 'LUH', site)) %>%
-    subset(site %in% c('AUH', 'BGH', 'LUH', 'RLH', 'Other')) %>%
-    mutate(site = factor(site, levels = c('AUH', 'BGH', 'LUH', 'RLH', 'Other'))) %>%
-    ggplot(aes(x=as.Date(`Date`))) +
-    geom_line(aes(fill=..count..), stat="bin", binwidth = 7) + 
-    scale_x_date(date_breaks = "months", date_labels = "%b") + 
-    geom_vline(xintercept = as.numeric(as.Date(c("2021-01-01", "2022-01-01"))), linetype=4) +
-    theme(axis.text.x = element_text(size=8, angle=45)) + 
-    facet_wrap(~ site) +
-    ggtitle("Patient uptake of video consultation during 2020-2022 per site") +
-    ylab("patient uptake (count per 7 days)") +
-    xlab("Time (Month)")
+#Facet_wrap
 
-  
-  
-  cons %>%
-    mutate(Speciality = str_split_fixed(cons$waitingArea, '/', 2)[,2]) %>%
-    ggplot(aes(x=as.Date(`Date`), fill = Speciality)) +
-    geom_bar(aes(fill=..count..), stat="bin", binwidth = 7)
+cons %>%
+  mutate(site = 'Other') %>%
+  mutate(site = if_else(str_detect(waitingArea, 'AUH') == TRUE, 'AUH', site)) %>%
+  mutate(site = if_else(str_detect(waitingArea, 'BGH') == TRUE, 'BGH', site)) %>%
+  mutate(site = if_else(str_detect(waitingArea, 'RLH') == TRUE, 'RLH', site)) %>%
+  mutate(site = if_else(str_detect(waitingArea, 'LUH') == TRUE, 'LUH', site)) %>%
+  mutate(site = factor(site, levels = c('RLH','AUH','BGH', 'LUH', 'Other'))) %>%
+  subset(site %in% c('AUH', 'BGH', 'LUH', 'RLH', 'Other')) %>%
+  mutate(Date = as_date(Date)) %>%
+  ggplot(aes(Date)) +
+  geom_freqpoly(binwidth = 7) + 
+  scale_x_date(date_breaks = "months", date_labels = "%b") + 
+  geom_vline(xintercept = as.numeric(as.Date(c("2021-01-01", "2022-01-01"))), linetype=4) +
+  theme(axis.text.x = element_text(size=8, angle=45)) + 
+  facet_wrap(~ site) +
+  ggtitle("Uptake of Attend Anywhere during 2020-2022 per site") +
+  ylab('Count (per week)') +
+  xlab("Time (Month)")
 
+# Grouped
+
+cons %>%
+  mutate(site = 'Other') %>%
+  mutate(site = if_else(str_detect(waitingArea, 'AUH') == TRUE, 'AUH', site)) %>%
+  mutate(site = if_else(str_detect(waitingArea, 'BGH') == TRUE, 'BGH', site)) %>%
+  mutate(site = if_else(str_detect(waitingArea, 'RLH') == TRUE, 'RLH', site)) %>%
+  mutate(site = if_else(str_detect(waitingArea, 'LUH') == TRUE, 'LUH', site)) %>%
+  mutate(site = factor(site, levels = c('RLH','AUH','BGH', 'LUH', 'Other'))) %>%
+  subset(site %in% c('AUH', 'BGH', 'LUH', 'RLH', 'Other')) %>%
+  mutate(Date = as_date(Date)) %>%
+  ggplot(aes(Date, colour= site)) +
+  geom_freqpoly(binwidth = 7) + 
+  scale_x_date(date_breaks = "months", date_labels = "%b") + 
+  geom_vline(xintercept = as.numeric(as.Date(c("2021-01-01", "2022-01-01"))), linetype=4) +
+  theme(axis.text.x = element_text(size=8, angle=45)) + 
+  ggtitle("Uptake of Attend Anywhere during 2020-2022 per site") +
+  ylab('Count (per week)') +
+  xlab("Time (Month)")
+
+
+#######################################
+# Department uptake per site per site #
+#######################################
+  
+#### Royal Liverpool #####
+
+
+cons %>% 
+  mutate(speciality = waitingArea) %>%
+  mutate(speciality = str_remove(speciality, '^\\w*/')) %>%
+  mutate(site = 'Other') %>%
+  mutate(site = if_else(str_detect(waitingArea, 'AUH') == TRUE, 'AUH', site)) %>%
+  mutate(site = if_else(str_detect(waitingArea, 'BGH') == TRUE, 'BGH', site)) %>%
+  mutate(site = if_else(str_detect(waitingArea, 'RLH') == TRUE, 'RLH', site)) %>%
+  mutate(site = if_else(str_detect(waitingArea, 'LUH') == TRUE, 'LUH', site)) %>%
+  mutate(site = factor(site, levels = c('RLH','AUH','BGH', 'LUH', 'Other'))) %>%
+  filter(site == 'RLH') %>%
+  mutate(Date = as_date(Date)) %>%
+  ggplot(aes(Date)) + 
+  geom_freqpoly(binwidth = 7) +
+  scale_x_date(date_breaks = "2 months", date_labels = "%b") + 
+  geom_vline(xintercept = as.numeric(as.Date(c("2021-01-01", "2022-01-01"))), linetype=4) +
+  facet_wrap(~ speciality) + 
+  theme(axis.text.x = element_text(size=8, angle=45)) + 
+  ggtitle('Weekly uptake of Attend Anywhere across different departments at The Royal Liverpool Hospital') +
+  ylab('Count (per week)') +
+  xlab('Date')
+
+#### Aintree #####
+  
+cons %>% 
+  mutate(speciality = waitingArea) %>%
+  mutate(speciality = str_remove(speciality, '^\\w*/')) %>%
+  mutate(site = 'Other') %>%
+  mutate(site = if_else(str_detect(waitingArea, 'AUH') == TRUE, 'AUH', site)) %>%
+  mutate(site = if_else(str_detect(waitingArea, 'BGH') == TRUE, 'BGH', site)) %>%
+  mutate(site = if_else(str_detect(waitingArea, 'RLH') == TRUE, 'RLH', site)) %>%
+  mutate(site = if_else(str_detect(waitingArea, 'LUH') == TRUE, 'LUH', site)) %>%
+  mutate(site = factor(site, levels = c('RLH','AUH','BGH', 'LUH', 'Other'))) %>%
+  filter(site == 'AUH') %>%
+  mutate(Date = as_date(Date)) %>%
+  ggplot(aes(Date)) + 
+  geom_freqpoly(binwidth = 7) +
+  scale_x_date(date_breaks = "2 months", date_labels = "%b") + 
+  geom_vline(xintercept = as.numeric(as.Date(c("2021-01-01", "2022-01-01"))), linetype=4) +
+  facet_wrap(~ speciality) + 
+  theme(axis.text.x = element_text(size=8, angle=45)) + 
+  ggtitle('Weekly uptake of Attend Anywhere across different departments at the Aintree Hospital') +
+  ylab('Count (per week)') +
+  xlab('Date')
+
+#### BroadGreen #####
+  
+cons %>% 
+  mutate(speciality = waitingArea) %>%
+  mutate(speciality = str_remove(speciality, '^\\w*/')) %>%
+  mutate(site = 'Other') %>%
+  mutate(site = if_else(str_detect(waitingArea, 'AUH') == TRUE, 'AUH', site)) %>%
+  mutate(site = if_else(str_detect(waitingArea, 'BGH') == TRUE, 'BGH', site)) %>%
+  mutate(site = if_else(str_detect(waitingArea, 'RLH') == TRUE, 'RLH', site)) %>%
+  mutate(site = if_else(str_detect(waitingArea, 'LUH') == TRUE, 'LUH', site)) %>%
+  mutate(site = factor(site, levels = c('RLH','AUH','BGH', 'LUH', 'Other'))) %>%
+  filter(site == 'BGH') %>%
+  mutate(Date = as_date(Date)) %>%
+  ggplot(aes(Date)) + 
+  geom_freqpoly(binwidth = 7) +
+  scale_x_date(date_breaks = "2 months", date_labels = "%b") + 
+  geom_vline(xintercept = as.numeric(as.Date(c("2021-01-01", "2022-01-01"))), linetype=4) +
+  facet_wrap(~ speciality) + 
+  theme(axis.text.x = element_text(size=8, angle=45)) + 
+  ggtitle('Weekly uptake of Attend Anywhere across different departments at The BroadGreen Hospital') +
+  ylab('Count (per week)') +
+  xlab('Date')
+
+#### Liverpool Hospital #####
+  
+cons %>% 
+  mutate(speciality = waitingArea) %>%
+  mutate(speciality = str_remove(speciality, '^\\w*/')) %>%
+  mutate(site = 'Other') %>%
+  mutate(site = if_else(str_detect(waitingArea, 'AUH') == TRUE, 'AUH', site)) %>%
+  mutate(site = if_else(str_detect(waitingArea, 'BGH') == TRUE, 'BGH', site)) %>%
+  mutate(site = if_else(str_detect(waitingArea, 'RLH') == TRUE, 'RLH', site)) %>%
+  mutate(site = if_else(str_detect(waitingArea, 'LUH') == TRUE, 'LUH', site)) %>%
+  mutate(site = factor(site, levels = c('RLH','AUH','BGH', 'LUH', 'Other'))) %>%
+  filter(site == 'LUH') %>%
+  mutate(Date = as_date(Date)) %>%
+  ggplot(aes(Date)) + 
+  geom_freqpoly(binwidth = 7) +
+  scale_x_date(date_breaks = "2 months", date_labels = "%b") + 
+  geom_vline(xintercept = as.numeric(as.Date(c("2021-01-01", "2022-01-01"))), linetype=4) +
+  facet_wrap(~ speciality) + 
+  theme(axis.text.x = element_text(size=8, angle=45)) + 
+  ggtitle('Weekly uptake of Attend Anywhere across different departments at Liverpool Hospital') +
+  ylab('Count (per week)') +
+  xlab('Date')
+
+#### Miscellaneous #####
+
+cons %>% 
+  mutate(speciality = waitingArea) %>%
+  mutate(speciality = str_remove(speciality, '^\\w*/')) %>%
+  mutate(site = 'Other') %>%
+  mutate(site = if_else(str_detect(waitingArea, 'AUH') == TRUE, 'AUH', site)) %>%
+  mutate(site = if_else(str_detect(waitingArea, 'BGH') == TRUE, 'BGH', site)) %>%
+  mutate(site = if_else(str_detect(waitingArea, 'RLH') == TRUE, 'RLH', site)) %>%
+  mutate(site = if_else(str_detect(waitingArea, 'LUH') == TRUE, 'LUH', site)) %>%
+  mutate(site = factor(site, levels = c('RLH','AUH','BGH', 'LUH', 'Other'))) %>%
+  filter(site == 'Other') %>%
+  mutate(Date = as_date(Date)) %>%
+  ggplot(aes(Date)) + 
+  geom_freqpoly(binwidth = 7) +
+  scale_x_date(date_breaks = "2 months", date_labels = "%b") + 
+  geom_vline(xintercept = as.numeric(as.Date(c("2021-01-01", "2022-01-01"))), linetype=4) +
+  facet_wrap(~ speciality) + 
+  theme(axis.text.x = element_text(size=8, angle=45)) + 
+  ggtitle('Weekly uptake of Attend Anywhere across different departments Miscellaneous') +
+  ylab('Count (per week)') +
+  xlab('Date')
