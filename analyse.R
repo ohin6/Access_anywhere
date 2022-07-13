@@ -70,6 +70,11 @@ sum(table(df$Site))
 # Age groups most satisfied with access #
 #########################################
 
+satisfied.group = c('Very Dissatisified' = 'red',
+                    'Dissatisified' = 'orange',
+                    'Neutral' = 'blue',
+                    'Satisfied' = 'purple',
+                    'Very Satisfied' = 'green')
 
 # satisfaction by age group percent
 df %>%

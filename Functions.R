@@ -284,5 +284,5 @@ Plot2 = function(accessOrOverall, satisfaction, freq) {
 }
 ##* look through different satisfaction by changing number in [] from 1 (very
 ##* disasisfied) to 5 (very satisfied) and access/overall satisfaction
-Plot2('overall', levels(df$accessRating)[5], 30)
-Plot2('access', levels(df$accessRating)[5], 30)
+Plot2('overall', levels(df$overallRating)[3], 30)
+Plot2('overall', levels(df$overallRating)[1], 14)

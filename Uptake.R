@@ -88,6 +88,12 @@ cons %>%
 
 # Grouped
 
+group.colours = c('RLH' = 'red',
+                  'AUH' = 'orange',
+                  'BGH' = 'green',
+                  'LUH' = 'blue',
+                  'Other' = 'grey')
+
 cons %>%
   mutate(site = 'Other') %>%
   mutate(site = if_else(str_detect(waitingArea, 'AUH') == TRUE, 'AUH', site)) %>%
@@ -99,7 +105,8 @@ cons %>%
   mutate(Date = as_date(Date)) %>%
   ggplot(aes(Date, colour= site)) +
   geom_freqpoly(binwidth = 7) + 
-  scale_x_date(date_breaks = "months", date_labels = "%b") + 
+  scale_x_date(date_breaks = "months", date_labels = "%b") +
+  scale_colour_manual(values=group.colours) +
   geom_vline(xintercept = as.numeric(as.Date(c("2021-01-01", "2022-01-01"))), linetype=4) +
   theme(axis.text.x = element_text(size=8, angle=45)) + 
   ggtitle("Uptake of Attend Anywhere during 2020-2022 per site") +
