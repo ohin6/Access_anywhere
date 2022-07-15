@@ -3,6 +3,7 @@ library(rms)
 require(lubridate)
 require(ggpubr)
 require(tidytext)
+require(tm)
 
 
 ##################
@@ -44,7 +45,7 @@ df = read_csv('rawData/raw_data.csv') %>%
 # Patient overall satisfaction Age group #
 ##########################################
 
-df %>%
+ggarrange(df %>%
   ggplot(aes(x= overallRating,  group=ageGroup)) + 
   geom_bar(aes(y = ..prop.., fill = factor(..x..)), stat="count") +
   geom_text(aes(label = scales::percent(..prop.., accuracy = 0.1),
@@ -54,10 +55,12 @@ df %>%
   scale_y_continuous(labels = scales::percent) +
   scale_fill_discrete(labels = levels(df$overallRating)) +
   theme(axis.text.x = element_blank(), axis.ticks.x = element_blank()) +
-  ggtitle("Patient Satisfaction\nOverall patient appointments satisfaction across different age groups") +
-  xlab('Rating')
+  ggtitle("Overall patient appointments satisfaction across different age groups") +
+  xlab('Rating'), legend= 'bottom')
 
-
+###########################################
+# Patient overall satisfaction department #
+###########################################
 
 x = as.data.frame(table(df$department)) %>%
   filter(Freq > 100)
