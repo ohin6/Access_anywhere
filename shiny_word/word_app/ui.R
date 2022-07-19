@@ -1,7 +1,7 @@
 library(shiny)
 
 ui = fluidPage(
-  # Titil
+  # Title
   titlePanel("Uploading Files"),
   
   sidebarLayout(
@@ -16,7 +16,13 @@ ui = fluidPage(
                 accept = c("text/csv",
                            "text/comma-separated-values,text/plain",
                            ".csv")
-                ) 
+                )
+      
+
+      
+      
+      
+      
     ),
     # Add plots
     mainPanel("main panel",
@@ -24,6 +30,9 @@ ui = fluidPage(
                 # Split screen
                 verticalLayout(plotOutput("ageGroupPlot"),
                                plotOutput("wordCount"),
+                               sliderInput("integer", "Integer:",
+                                           min = 0, max = 100,
+                                           value = 30),
                                tableOutput('table'))
                       )
               )

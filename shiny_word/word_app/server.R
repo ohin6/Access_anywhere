@@ -9,6 +9,7 @@ library(rms)
 require(stringr)
 require(igraph)
 require(ggraph)
+require(textclean)
 
 
 
@@ -110,7 +111,6 @@ function(input, output, session) {
       mutate(month = month(start, label = TRUE)) %>%
       mutate(year = year(start)) %>%
       mutate(day = day(start)) %>%
-      group_by(year) %>%
       select(patId, day, month, year, overallRating, ageGroup, reUse, Site, department)
   })
   
@@ -129,7 +129,6 @@ function(input, output, session) {
     
     df = read_csv(inFile$datapath) %>%
       
-      #df = read_csv('../../rawData/raw_data.csv') %>%
       rename(patId = "Respondent ID") %>%
       rename(colId = "Collector ID") %>%
       rename(start = "Start Date") %>%
@@ -152,10 +151,10 @@ function(input, output, session) {
       mutate(overallRating = factor(overallRating, levels = c('Dissatisfied', 'Neutral', 'Satisfied'))) %>%
       mutate(ageGroup = factor(ageGroup, c('16 - 25', '26 - 35', '36 - 45', '46 - 65', '65+'))) %>%
       mutate(department = str_remove(department, '^\\w*-')) %>%
-      select(patId:accessRating, overallRating, everything()) %>%
-      mutate(month = month(start, label = TRUE)) %>%
-      mutate(year = year(start)) %>%
-      group_by(year) %>%
+      select(patId:accessRating, overallRating, everything())
+    
+    
+    Bigram = df %>%
       filter(!is.na(comments)) %>%
       select(patId, (comments)) %>%
       unnest_tokens(trigram, comments, token = "ngrams", n = 1) %>%
@@ -170,6 +169,17 @@ function(input, output, session) {
       separate(trigram, c('word1', 'word2'), ' ')
     
     
+    # plot top 20 biwords
+    
+    Bigram %>%
+      count(biwords, sort = TRUE) %>% 
+      filter(!is.na(biwords)) %>%
+      slice(1:input$integer) %>%
+      ggplot(aes(x = reorder(biwords, n), y = n)) +
+      geom_bar(stat = 'identity') +
+      coord_flip() +
+      xlab(NULL) +
+      ylab('Count')
     
       
   })
