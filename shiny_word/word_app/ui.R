@@ -17,24 +17,31 @@ ui = fluidPage(
                            "text/comma-separated-values,text/plain",
                            ".csv")
                 )
-      
 
-      
-      
-      
-      
     ),
     # Add plots
-    mainPanel("main panel",
-              fluidRow(
-                # Split screen
-                verticalLayout(plotOutput("ageGroupPlot"),
-                               plotOutput("wordCount"),
-                               sliderInput("integer", "Integer:",
-                                           min = 0, max = 100,
-                                           value = 30),
-                               tableOutput('table'))
-                      )
-              )
+    mainPanel(
+      tabsetPanel(
+        tabPanel('Age Group', plotOutput("ageGroupPlot")),
+        tabPanel('Per Year', plotOutput("perYear")),
+        tabPanel('Department', plotOutput("department"),
+                              radioButtons("radio", label = h3("Site"),
+                              choices = list("Royal" = 'f_RLH', "Ainetree" = 'f_AUH', 'Broadgreen' = 'f_BGH', 'All Sites'= 'f_RLH, f_AUH, f_BGH'), 
+                              selected = 'f_RLH'),
+                 downloadButton('Department', label = 'Download', class = '')),
+        tabPanel('Comments', verticalLayout(
+                              splitLayout(cellWidths = c("50%", "50%"),
+                                            plotOutput("wordCount"),
+                                            plotOutput("wordCount2")),
+                              sliderInput("integer", "Integer:",
+                                min = 0, max = 100,
+                                value = 30)),
+                              plotOutput("wordCount3")
+                 ),
+        
+        tabPanel('Table', tableOutput('table'))
+      
+                    )
           )
+    )
 )
