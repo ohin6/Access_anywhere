@@ -47,7 +47,7 @@ function(input, output, session) {
       mutate(month = month(start, label = TRUE)) %>%
       mutate(year = year(start)) %>%
       mutate(day = day(start))
-      
+    
   })
   
   #####################
@@ -55,15 +55,15 @@ function(input, output, session) {
   #####################
   stopwords_filter = reactive({
     stop_words %>%
-    filter(lexicon == 'SMART')
+      filter(lexicon == 'SMART')
   })
   
   ###########################################
   # Create plot for age Groups satisfaction #
   ###########################################
   output$ageGroupPlot = renderPlot({
-
-        if (is.null(data_input()))
+    
+    if (is.null(data_input()))
       return(NULL)
     
     # read in function for tidied table
@@ -91,10 +91,10 @@ function(input, output, session) {
   # Create table #
   ################
   output$table = renderTable({
-
+    
     if (is.null(data_input()))
-       return(NULL)
-   # read in function for tidied table
+      return(NULL)
+    # read in function for tidied table
     data_input() %>%
       # select data for table
       select(patId, day, month, year, overallRating, ageGroup, reUse, Site, department)

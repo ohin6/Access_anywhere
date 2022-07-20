@@ -1,0 +1,13 @@
+name: word_app
+title: word_app
+username:
+account: ohin6
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 6663781
+bundleId: 6112592
+url: https://ohin6.shinyapps.io/word_app/
+when: 1658249375.13586
+lastSyncTime: 1658249375.13586
+asMultiple: FALSE
+asStatic: FALSE
