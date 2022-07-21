@@ -50,6 +50,7 @@ function(input, output, session) {
     
   })
   
+  
   #####################
   # Create stop words #
   #####################
@@ -57,6 +58,17 @@ function(input, output, session) {
     stop_words %>%
       filter(lexicon == 'SMART')
   })
+  
+  
+  ###########################
+  # Get dataframe col names #
+  ###########################
+  
+  observeEvent(data_input(), {
+    updateSelectInput(session, "select", choices=colnames(data_input()))
+  })
+  
+  
   
   ###########################################
   # Create plot for age Groups satisfaction #
@@ -97,7 +109,8 @@ function(input, output, session) {
     # read in function for tidied table
     data_input() %>%
       # select data for table
-      select(patId, day, month, year, overallRating, ageGroup, reUse, Site, department)
+      # select(patId, day, month, year, overallRating, ageGroup, reUse, Site, department)
+      select(input$select)
   })
   
   ############################

@@ -1,6 +1,12 @@
 library(shiny)
 
+not_sel <- "Not Selected"
+
+
+
+
 ui = fluidPage(
+  
   # Title
   titlePanel("Uploading Files"),
   
@@ -15,9 +21,9 @@ ui = fluidPage(
                 multiple = FALSE,
                 accept = c("text/csv",
                            "text/comma-separated-values,text/plain",
-                           ".csv")
-      )
+                           ".csv"))
       
+
     ),
     # Add plots
     mainPanel(
@@ -39,7 +45,10 @@ ui = fluidPage(
           plotOutput("wordCount3")
         ),
         
-        tabPanel('Table', tableOutput('table'))
+        tabPanel('Table', 
+                 selectInput("select", "Select columns to display", c('No data entered'), multiple = TRUE),
+                 selectInput("FilterageGroup", "ageGroup", c('No data entered')),
+                 tableOutput('table'))
         
       )
     )
