@@ -1,9 +1,5 @@
 library(shiny)
 
-not_sel <- "Not Selected"
-
-
-
 
 ui = fluidPage(
   
@@ -44,9 +40,6 @@ ui = fluidPage(
                               selected = 'f_RLH'),
                  downloadButton('Department', label = 'Download', class = '')),
         tabPanel('Comments', verticalLayout(
-          radioButtons("radioComments", label = h3('filter by:'), choices = list('None', 'Satisfied' = 'Satisfied',
-                                                                                 'Dissatisfied' = 'Dissatisfied',
-                                                                                 'Neutral' = 'Neutral')),
           splitLayout(cellWidths = c("50%", "50%"),
                       plotOutput("wordCount"),
                       plotOutput("wordCount2")),

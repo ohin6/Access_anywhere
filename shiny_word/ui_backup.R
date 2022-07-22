@@ -1,9 +1,5 @@
 library(shiny)
 
-not_sel <- "Not Selected"
-
-
-
 
 ui = fluidPage(
   
@@ -21,7 +17,15 @@ ui = fluidPage(
                 multiple = FALSE,
                 accept = c("text/csv",
                            "text/comma-separated-values,text/plain",
-                           ".csv"))
+                           ".csv")),
+      
+      selectInput("ageGroup", "age Group", c('No data entered')),
+      selectInput("Year", "year", c('No data entered')),
+      selectInput("month", "month Criteria", c('No data entered')),
+      selectInput("site", "Site Criteria", c('No data entered')),
+      selectInput("department", "department", c('No data entered')),
+      selectInput("satisfaction", "Patient satisfaction", c('No data entered'))
+      
       
       
     ),
@@ -36,9 +40,6 @@ ui = fluidPage(
                               selected = 'f_RLH'),
                  downloadButton('Department', label = 'Download', class = '')),
         tabPanel('Comments', verticalLayout(
-          radioButtons("radioComments", label = h3('filter by:'), choices = list('None', 'Satisfied' = 'Satisfied',
-                                                                                 'Dissatisfied' = 'Dissatisfied',
-                                                                                 'Neutral' = 'Neutral')),
           splitLayout(cellWidths = c("50%", "50%"),
                       plotOutput("wordCount"),
                       plotOutput("wordCount2")),
@@ -50,12 +51,6 @@ ui = fluidPage(
         
         tabPanel('Table', 
                  selectInput("select", "Select columns to display", c('No data entered'), multiple = TRUE),
-                 selectInput("ageGroup", "age Group", c('No data entered')),
-                 selectInput("Year", "year", c('No data entered')),
-                 selectInput("month", "month Criteria", c('No data entered')),
-                 selectInput("site", "Site Criteria", c('No data entered')),
-                 selectInput("department", "department", c('No data entered')),
-                 selectInput("satisfaction", "Patient satisfaction", c('No data entered')),
                  tableOutput('table'))
         
       )

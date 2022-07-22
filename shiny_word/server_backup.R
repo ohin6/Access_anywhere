@@ -47,8 +47,23 @@ function(input, output, session) {
       mutate(month = month(start, label = TRUE)) %>%
       mutate(year = year(start)) %>%
       mutate(day = day(start)) %>%
+      
       select(patId, day, month, year, overallRating, ageGroup, reUse, Site, department, comments, start)
     
+  })
+  
+  # data_input = reactive({
+  #   req(data()) %>%
+  #     filter(if(input$ageGroup!= 'All') (ageGroup == input$ageGroup) else TRUE) %>%
+  #     filter(if(input$Year != 'All')  (year == input$Year) else TRUE) %>%
+  #     filter(if(input$month!= 'All') (month == input$month) else TRUE) %>%
+  #     filter(if(input$site!= 'All') (Site == input$site) else TRUE) %>%
+  #     filter(if(input$department!= 'All') (department == input$department) else TRUE) %>%
+  #     filter(if(input$satisfaction!= 'All') (overallRating == input$satisfaction) else TRUE)
+  # })
+  
+  observeEvent(data(), {
+    updateSelectInput(session, "select", choices=colnames(data_input()))
   })
   
   
@@ -132,7 +147,13 @@ function(input, output, session) {
       return(NULL)
     
     # read in function for tidied table
-    df = data_input()
+    df = data_input() %>%
+      filter(if(input$ageGroup!= 'All') (ageGroup == input$ageGroup) else TRUE) %>%
+      filter(if(input$Year != 'All')  (year == input$Year) else TRUE) %>%
+      filter(if(input$month!= 'All') (month == input$month) else TRUE) %>%
+      filter(if(input$site!= 'All') (Site == input$site) else TRUE) %>%
+      filter(if(input$department!= 'All') (department == input$department) else TRUE) %>%
+      filter(if(input$satisfaction!= 'All') (overallRating == input$satisfaction) else TRUE)
     
     ggarrange(df %>%
                 ggplot(aes(x= overallRating,  group=ageGroup)) + 
@@ -158,7 +179,12 @@ function(input, output, session) {
     
     # read in function for tidied table
     df = data_input() %>%
-      filter(if(input$radioComments!= 'None') (overallRating == input$radioComments) else TRUE)
+      filter(if(input$ageGroup!= 'All') (ageGroup == input$ageGroup) else TRUE) %>%
+      filter(if(input$Year != 'All')  (year == input$Year) else TRUE) %>%
+      filter(if(input$month!= 'All') (month == input$month) else TRUE) %>%
+      filter(if(input$site!= 'All') (Site == input$site) else TRUE) %>%
+      filter(if(input$department!= 'All') (department == input$department) else TRUE) %>%
+      filter(if(input$satisfaction!= 'All') (overallRating == input$satisfaction) else TRUE)
     
     Bigram = df %>%
       filter(!is.na(comments)) %>%
@@ -197,7 +223,13 @@ function(input, output, session) {
       return(NULL)
     
     # read in function for tidied table
-    df = data_input()
+    df = data_input() %>%
+      filter(if(input$ageGroup!= 'All') (ageGroup == input$ageGroup) else TRUE) %>%
+      filter(if(input$Year != 'All')  (year == input$Year) else TRUE) %>%
+      filter(if(input$month!= 'All') (month == input$month) else TRUE) %>%
+      filter(if(input$site!= 'All') (Site == input$site) else TRUE) %>%
+      filter(if(input$department!= 'All') (department == input$department) else TRUE) %>%
+      filter(if(input$satisfaction!= 'All') (overallRating == input$satisfaction) else TRUE)
     
     
     # collate triwords
@@ -241,7 +273,14 @@ function(input, output, session) {
       return(NULL)
     
     # read in function for tidied table
-    df = data_input()
+    df = data_input() %>%
+      filter(if(input$ageGroup!= 'All') (ageGroup == input$ageGroup) else TRUE) %>%
+      filter(if(input$Year != 'All')  (year == input$Year) else TRUE) %>%
+      filter(if(input$month!= 'All') (month == input$month) else TRUE) %>%
+      filter(if(input$site!= 'All') (Site == input$site) else TRUE) %>%
+      filter(if(input$department!= 'All') (department == input$department) else TRUE) %>%
+      filter(if(input$satisfaction!= 'All') (overallRating == input$satisfaction) else TRUE)
+    
     
     Bigram = df %>%
       filter(!is.na(comments)) %>%
@@ -286,7 +325,14 @@ function(input, output, session) {
       return(NULL)
     
     # read in function for tidied table
-    df = data_input()
+    df = data_input() %>%
+      filter(if(input$ageGroup!= 'All') (ageGroup == input$ageGroup) else TRUE) %>%
+      filter(if(input$Year != 'All')  (year == input$Year) else TRUE) %>%
+      filter(if(input$month!= 'All') (month == input$month) else TRUE) %>%
+      filter(if(input$site!= 'All') (Site == input$site) else TRUE) %>%
+      filter(if(input$department!= 'All') (department == input$department) else TRUE) %>%
+      filter(if(input$satisfaction!= 'All') (overallRating == input$satisfaction) else TRUE)
+    
     
     f_all = df %>%
       mutate(month = month(start, label = TRUE)) %>%
@@ -343,7 +389,13 @@ function(input, output, session) {
       return(NULL)
     
     # read in function for tidied table
-    df = data_input()
+    df = data_input() %>%
+      filter(if(input$ageGroup!= 'All') (ageGroup == input$ageGroup) else TRUE) %>%
+      filter(if(input$Year != 'All')  (year == input$Year) else TRUE) %>%
+      filter(if(input$month!= 'All') (month == input$month) else TRUE) %>%
+      filter(if(input$site!= 'All') (Site == input$site) else TRUE) %>%
+      filter(if(input$department!= 'All') (department == input$department) else TRUE) %>%
+      filter(if(input$satisfaction!= 'All') (overallRating == input$satisfaction) else TRUE)
     
     x = as.data.frame(table(df$department)) %>%
       filter(Freq > 100)
