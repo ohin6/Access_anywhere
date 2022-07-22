@@ -46,7 +46,8 @@ function(input, output, session) {
       mutate(department = str_remove(department, '^\\w*-')) %>%
       mutate(month = month(start, label = TRUE)) %>%
       mutate(year = year(start)) %>%
-      mutate(day = day(start))
+      mutate(day = day(start)) %>%
+      select(patId, day, month, year, overallRating, ageGroup, reUse, Site, department, comments, start)
     
   })
   
@@ -68,6 +69,58 @@ function(input, output, session) {
     updateSelectInput(session, "select", choices=colnames(data_input()))
   })
   
+  ###########################
+  # Get dataframe ageGroups #
+  ###########################
+  # ageGroup
+  observeEvent(data_input(), {
+    updateSelectInput(session, "ageGroup", choices= c('All', as.character(unique(data_input()$ageGroup))))
+  })
+  
+  #Year
+  observeEvent(data_input(), {
+    updateSelectInput(session, "Year", choices= c('All', unique(data_input()$year)))
+  })
+  
+  # Month
+  observeEvent(data_input(), {
+    updateSelectInput(session, "month", choices= c('All', as.character(unique(data_input()$month))))
+  })
+  
+  #Site
+  observeEvent(data_input(), {
+    updateSelectInput(session, "site", choices= c('All',unique(data_input()$Site)))
+  })
+  
+  # Department
+  observeEvent(data_input(), {
+    updateSelectInput(session, "department", choices= c('All',unique(data_input()$department)))
+  })
+  
+  #satistfaction
+  observeEvent(data_input(), {
+    updateSelectInput(session, "satisfaction", choices= c('All', as.character(unique(data_input()$overallRating))))
+  })
+  
+  
+  
+  ################
+  # Create table #
+  ################
+  output$table = renderTable({
+    
+    if (is.null(data_input()))
+      return(NULL)
+    # read in function for tidied table
+    data_input() %>%
+      filter(if(input$ageGroup!= 'All') (ageGroup == input$ageGroup) else TRUE) %>%
+      filter(if(input$Year != 'All')  (year == input$Year) else TRUE) %>%
+      filter(if(input$month!= 'All') (month == input$month) else TRUE) %>%
+      filter(if(input$site!= 'All') (Site == input$site) else TRUE) %>%
+      filter(if(input$department!= 'All') (department == input$department) else TRUE) %>%
+      filter(if(input$satisfaction!= 'All') (overallRating == input$satisfaction) else TRUE) %>%
+      select(input$select)
+  })
   
   
   ###########################################
@@ -79,38 +132,20 @@ function(input, output, session) {
       return(NULL)
     
     # read in function for tidied table
-    df = data_input() %>%
-      group_by(year)
+    df = data_input()
     
-    #plot
-    ggplot(df, aes(x = overallRating, group = year)) + 
-      geom_bar(aes(y = ..prop.., fill = factor(..x..)), stat="count") + 
-      geom_text(aes( label = scales::percent(..prop.., accuracy = 0.1),
-                     y= ..prop.. ), stat= "count", vjust = -.5, size = 2) +
-      labs(y = "Percent", fill = 'Rating') +
-      facet_wrap(~ year) +
-      scale_y_continuous(labels = scales::percent) +
-      theme(axis.text.x=element_blank(), axis.ticks.x=element_blank()) + 
-      scale_fill_discrete(labels = levels(df$overallRating)) +
-      ggtitle("Overall patient satisfaction Attend Anywhere per year") +
-      xlab("Satisfaction") + ylab("Percentage") + 
-      ggtitle('All Sites') + 
-      xlab(NULL) + 
-      ylab(NULL)
-  })
-  
-  ################
-  # Create table #
-  ################
-  output$table = renderTable({
-    
-    if (is.null(data_input()))
-      return(NULL)
-    # read in function for tidied table
-    data_input() %>%
-      # select data for table
-      # select(patId, day, month, year, overallRating, ageGroup, reUse, Site, department)
-      select(input$select)
+    ggarrange(df %>%
+                ggplot(aes(x= overallRating,  group=ageGroup)) + 
+                geom_bar(aes(y = ..prop.., fill = factor(..x..)), stat="count") +
+                geom_text(aes(label = scales::percent(..prop.., accuracy = 0.1),
+                              y= ..prop.. ), stat= "count", vjust = -.5, size = 2) +
+                labs(y = "Percent", fill="Satisfaction") +
+                facet_grid(~ageGroup) +
+                scale_y_continuous(labels = scales::percent) +
+                scale_fill_discrete(labels = levels(df$overallRating)) +
+                theme(axis.text.x = element_blank(), axis.ticks.x = element_blank()) +
+                ggtitle("Overall patient appointments satisfaction across different age groups") +
+                xlab('Rating'), legend= 'bottom')
   })
   
   ############################
@@ -122,7 +157,8 @@ function(input, output, session) {
       return(NULL)
     
     # read in function for tidied table
-    df = data_input()
+    df = data_input() %>%
+      filter(if(input$radioComments!= 'None') (overallRating == input$radioComments) else TRUE)
     
     Bigram = df %>%
       filter(!is.na(comments)) %>%
