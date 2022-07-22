@@ -10,6 +10,7 @@ require(stringr)
 require(igraph)
 require(ggraph)
 require(textclean)
+require()
 
 
 
@@ -52,15 +53,6 @@ function(input, output, session) {
     
   })
   
-  # data_input = reactive({
-  #   req(data()) %>%
-  #     filter(if(input$ageGroup!= 'All') (ageGroup == input$ageGroup) else TRUE) %>%
-  #     filter(if(input$Year != 'All')  (year == input$Year) else TRUE) %>%
-  #     filter(if(input$month!= 'All') (month == input$month) else TRUE) %>%
-  #     filter(if(input$site!= 'All') (Site == input$site) else TRUE) %>%
-  #     filter(if(input$department!= 'All') (department == input$department) else TRUE) %>%
-  #     filter(if(input$satisfaction!= 'All') (overallRating == input$satisfaction) else TRUE)
-  # })
   
   observeEvent(data(), {
     updateSelectInput(session, "select", choices=colnames(data_input()))
@@ -128,6 +120,9 @@ function(input, output, session) {
       return(NULL)
     # read in function for tidied table
     data_input() %>%
+      mutate(comments = str_replace_all(comments, "[^[:alnum:]]", " ")) %>% # remove punctuation as this was causing issues in table
+      filter(if(input$comments!= 'No') (!is.na(comments)) else TRUE) %>%
+      filter(if(input$searchTerm!= '') (str_detect(comments, regex(input$searchTerm, ignore_case = TRUE))) else TRUE) %>%
       filter(if(input$ageGroup!= 'All') (ageGroup == input$ageGroup) else TRUE) %>%
       filter(if(input$Year != 'All')  (year == input$Year) else TRUE) %>%
       filter(if(input$month!= 'All') (month == input$month) else TRUE) %>%
@@ -495,6 +490,25 @@ function(input, output, session) {
     
     
   })
-  
+  #######################
+  # Count sample inputs #
+  #######################
+  output$count = renderText({
+    
+    if (is.null(data_input()))
+      return('No file selected')
+    
+    # read in function for tidied table
+    data_input() %>%
+      # add filters
+      filter(if(input$ageGroup!= 'All') (ageGroup == input$ageGroup) else TRUE) %>%
+      filter(if(input$Year != 'All')  (year == input$Year) else TRUE) %>%
+      filter(if(input$month!= 'All') (month == input$month) else TRUE) %>%
+      filter(if(input$site!= 'All') (Site == input$site) else TRUE) %>%
+      filter(if(input$department!= 'All') (department == input$department) else TRUE) %>%
+      filter(if(input$satisfaction!= 'All') (overallRating == input$satisfaction) else TRUE) %>%
+      # Count rows
+      nrow()
+  })
   
 }
