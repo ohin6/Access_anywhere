@@ -1,4 +1,5 @@
 library(shiny)
+library(shinydlplot)
 
 
 ui = fluidPage(
@@ -27,12 +28,7 @@ ui = fluidPage(
       selectInput("satisfaction", "Patient Satisfaction", c('No data entered')),
       hr(),
       h5('Number of Inputs:'),
-      textOutput('count')
-      
-      
-      
-
-    ),
+      textOutput('count')),
     # Add plots
     mainPanel(
       # Create tabs for different plots
@@ -46,9 +42,8 @@ ui = fluidPage(
                  # radio buttons to filter by site
                  radioButtons("radio", label = h3("Site (please remove Site filters from side panel)"),
                               choices = list('All Sites'= 'f_RLH, f_AUH, f_BGH', "Royal" = 'f_RLH', "Ainetree" = 'f_AUH', 'Broadgreen' = 'f_BGH'), 
-                              selected = 'f_RLH, f_AUH, f_BGH'),
-                 # download image button
-                 downloadButton('Department', label = 'Download', class = '')),
+                              selected = 'f_RLH, f_AUH, f_BGH')),
+
         # word count - Panel
         tabPanel('Comments', verticalLayout(
           splitLayout(cellWidths = c("50%", "50%"), # side by side plot split
@@ -65,9 +60,10 @@ ui = fluidPage(
                  selectInput("select", "Select columns to display", c('No data entered'), multiple = TRUE), # select column inputs
                  radioButtons('comments', 'remove inputs with no comments?', list('No', 'Yes')), # filter samples with no comments
                  textInput("searchTerm", "Comments Search Term", ""),
-                tableOutput('table'))
-        
+                 h5('Number of Inputs in Table:'), textOutput('tableCount'),
+                 downloadButton("downloadData", "Download Table"),
+                 tableOutput('table'))
+        )
       )
     )
   )
-)

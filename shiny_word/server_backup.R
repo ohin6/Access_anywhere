@@ -10,7 +10,7 @@ require(stringr)
 require(igraph)
 require(ggraph)
 require(textclean)
-require()
+library(shinydlplot)
 
 
 
@@ -114,12 +114,9 @@ function(input, output, session) {
   ################
   # Create table #
   ################
-  output$table = renderTable({
-    
-    if (is.null(data_input()))
-      return(NULL)
-    # read in function for tidied table
-    data_input() %>%
+  
+  data <- reactive({
+    req(data_input()) %>%
       mutate(comments = str_replace_all(comments, "[^[:alnum:]]", " ")) %>% # remove punctuation as this was causing issues in table
       filter(if(input$comments!= 'No') (!is.na(comments)) else TRUE) %>%
       filter(if(input$searchTerm!= '') (str_detect(comments, regex(input$searchTerm, ignore_case = TRUE))) else TRUE) %>%
@@ -128,8 +125,23 @@ function(input, output, session) {
       filter(if(input$month!= 'All') (month == input$month) else TRUE) %>%
       filter(if(input$site!= 'All') (Site == input$site) else TRUE) %>%
       filter(if(input$department!= 'All') (department == input$department) else TRUE) %>%
-      filter(if(input$satisfaction!= 'All') (overallRating == input$satisfaction) else TRUE) %>%
+      filter(if(input$satisfaction!= 'All') (overallRating == input$satisfaction) else TRUE)
+  })
+  
+  output$table = renderTable({
+    if (is.null(data()))
+      return(NULL)
+    # read in function for tidied table
+    data() %>%
       select(input$select)
+  })
+  
+  output$tableCount = renderText({
+    if (is.null(data()))
+      return(NULL)
+    # read in function for tidied table
+    data() %>%
+      nrow()
   })
   
   
@@ -510,5 +522,21 @@ function(input, output, session) {
       # Count rows
       nrow()
   })
+  
+  
+  ####################
+  # Download buttons #
+  ####################
+  
+  # Data Table
+  
+  output$downloadData <- downloadHandler(
+    filename = function() {
+      paste("dataTable-", Sys.Date(), ".csv", sep="")
+    },
+    content = function(file) {
+      write.csv(data(), file)
+    })
+  
   
 }
