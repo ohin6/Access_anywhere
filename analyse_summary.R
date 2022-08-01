@@ -4,7 +4,8 @@ require(lubridate)
 require(ggpubr)
 require(tidytext)
 require(tm)
-
+library(scales)
+require(mosaic)
 
 ##################
 # Import dataset #
@@ -33,13 +34,16 @@ df = read_csv('rawData/raw_data.csv') %>%
   mutate(Site = if_else(str_detect(department,'LUH') == TRUE, 'LUH', Site)) %>%
   mutate(Site = if_else(str_detect(department,'BGH') == TRUE, 'BGH', Site)) %>%
   mutate(accessRating = str_replace(accessRating, 'Neither Satisfied nor Dissatisfied', 'Neutral')) %>%
-  mutate(overallRating = str_replace(overallRating, 'Neither Satisfied nor Dissatisfied', 'Neutral')) %>% 
+  mutate(overallRating = str_replace(overallRating, 'Neither Satisfied nor Dissatisfied', 'Neutral')) %>%
   mutate(overallRating = if_else(overallRating == 'Very Satisfied', 'Satisfied', overallRating)) %>%
   mutate(overallRating = if_else(overallRating == 'Very Dissatisfied', 'Dissatisfied', overallRating)) %>%
   mutate(overallRating = factor(overallRating, levels = c('Dissatisfied', 'Neutral', 'Satisfied'))) %>%
   mutate(ageGroup = factor(ageGroup, c('16 - 25', '26 - 35', '36 - 45', '46 - 65', '65+'))) %>%
   mutate(department = str_remove(department, '^\\w*-')) %>%
-  select(patId:accessRating, overallRating, everything()) 
+  mutate(month = month(start, label = TRUE)) %>%
+  mutate(year = as.integer(year(start))) %>%
+  mutate(day = day(start)) %>%
+  select(patId, day, month, year, overallRating, ageGroup, reUse, Site, department, comments, start)
 
 ##########################################
 # Patient overall satisfaction Age group #
@@ -57,6 +61,58 @@ ggarrange(df %>%
   theme(axis.text.x = element_blank(), axis.ticks.x = element_blank()) +
   ggtitle("Overall patient appointments satisfaction across different age groups") +
   xlab('Rating'), legend= 'bottom')
+
+
+# data table
+
+library(varhandle)
+
+df = read_csv('rawData/raw_data.csv') %>%
+  rename(patId = "Respondent ID") %>%
+  rename(colId = "Collector ID") %>%
+  rename(start = "Start Date") %>%
+  rename(end = "End Date") %>%
+  rename(ageGroup = "What age group do you belong?") %>%
+  rename(accessRating = "Please rate the ease of use for accessing the Video Consultation today?") %>%
+  rename(overallRating = "Please rate your overall experience of the Video Consultation today?") %>%
+  rename(reUse = "Would you be happy to use the Video Consultation again?") %>%
+  rename(comments = "Please provide us with any additional comments/ suggestions.") %>%
+  rename(department = "Waiting Area") %>%
+  mutate(Site = 'Other') %>%
+  mutate(Site = if_else(str_detect(department, 'RLH') == TRUE, 'RLH', Site)) %>%
+  mutate(Site = if_else(str_detect(department,'AUH') == TRUE, 'AUH', Site)) %>%
+  mutate(Site = if_else(str_detect(department,'LUH') == TRUE, 'LUH', Site)) %>%
+  mutate(Site = if_else(str_detect(department,'BGH') == TRUE, 'BGH', Site)) %>%
+  mutate(accessRating = str_replace(accessRating, 'Neither Satisfied nor Dissatisfied', 'Neutral')) %>%
+  mutate(overallRating = str_replace(overallRating, 'Neither Satisfied nor Dissatisfied', 'Neutral')) %>% 
+  mutate(overallRating = if_else(overallRating == 'Very Satisfied', 'Satisfied', overallRating)) %>%
+  mutate(overallRating = if_else(overallRating == 'Very Dissatisfied', 'Dissatisfied', overallRating)) %>%
+  mutate(overallRating = factor(overallRating, levels = c('Dissatisfied', 'Neutral', 'Satisfied'))) %>%
+  mutate(ageGroup = factor(ageGroup, c('16 - 25', '26 - 35', '36 - 45', '46 - 65', '65+'))) %>%
+  mutate(department = str_remove(department, '^\\w*-')) %>%
+  select(patId:accessRating, overallRating, everything()) 
+
+
+
+df2 = tibble()
+
+for (i in 1:length(unique(df$ageGroup))){
+  for (j in 1:length(unique(df$overallRating))){
+    count = df %>%
+      select(ageGroup,overallRating) %>%
+      filter(overallRating == unique(unfactor(overallRating))[j]) %>%
+      filter(ageGroup == unique(unfactor(ageGroup))[i]) %>%
+      nrow()
+    df2[j,i] = count
+  }
+  colnames(df2) = unique(df$ageGroup)
+}
+
+df2 %>%
+  mutate(Rating = unique(df$overallRating)) %>%
+  select(Rating, everything())
+
+
 
 ###########################################
 # Patient overall satisfaction department #
@@ -137,6 +193,32 @@ annotate_figure(ggarrange(f_RLH,f_AUH,f_BGH,
             left = text_grob("Percent", rot = 90))
 
 
+
+
+# create table
+
+# Create Table
+
+
+df4 = tibble ()
+for (i in 1:length(unique(df$overallRating))){
+  for (j in 1:length(unique(df$Site))){
+    count = df %>% 
+      select(Site,overallRating) %>%
+      filter(overallRating == unique(unfactor(overallRating))[i]) %>%
+      filter(Site == unique(Site)[j]) %>%
+      nrow()
+    df4[j,i] = count
+  }
+  colnames(df4) = unique(df$year)
+}
+df4 %>%
+  mutate(Site = unique(df$Site)) %>%
+  select(Site, everything()) %>%
+  mutate(Total = rowSums(df4))
+
+
+
 #################################
 # Patient satisfaction per year #
 #################################
@@ -183,6 +265,26 @@ f_site = df %>%
 annotate_figure(ggarrange(f_all, f_site,
           common.legend = TRUE, legend = 'bottom'),
           left = text_grob("Percent", rot = 90))
+
+
+# Create Table
+
+
+df3 = tibble ()
+for (i in 1:length(unique(df$overallRating))){
+  for (j in 1:length(unique(df$year))){
+    count = df %>% 
+      select(Site,year,overallRating) %>%
+      filter(overallRating == unique(unfactor(overallRating))[i]) %>%
+      filter(year == unique(year)[j]) %>%
+      nrow()
+    df3[j,i] = count
+  }
+  colnames(df3) = unique(df$year)
+}
+df3 %>%
+  mutate(Rating = unique(df$overallRating)) %>%
+  select(Rating, everything())
           
 
 #################################

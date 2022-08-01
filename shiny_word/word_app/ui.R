@@ -44,14 +44,18 @@ ui = fluidPage(
         tabPanel('Age Group', 
                  h3('Plot'),
                  plotOutput("ageGroupPlot"),
-                 tableOutput("ageTable"),
-                 downloadButton("downloadageGroup", "Download Plot")),
+                 downloadButton("downloadageGroup", "Download Plot"),
+                 h3('Count'),
+                 tableOutput("ageTable")),
+                 
         
         # Experience per year - Panel
         tabPanel('Per Year',
                  h3('Plot'),
                  plotOutput("perYear"),
-                 downloadButton("downloadYear", "Download Plot")),
+                 downloadButton("downloadYear", "Download Plot"),
+                 h3('Count per year'),
+                 tableOutput('tableYEAR')),
         
         # Experience per department and site - Panel
         tabPanel('Department',
@@ -78,6 +82,10 @@ ui = fluidPage(
                  
                  # Download button
                  downloadButton("downloadSatDep", "Download Plot"),
+                 
+                 # import table
+                 h3('Site Count'),
+                 tableOutput('tableSITE')
                  
         ),
         

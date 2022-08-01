@@ -1,11 +1,9 @@
 library(shiny)
 library(tidyverse)
-library(rms)
 require(lubridate)
 require(ggpubr)
 require(tidytext)
 require(tm)
-library(rms)
 require(stringr)
 require(igraph)
 require(ggraph)
@@ -105,8 +103,6 @@ function(input, output, session) {
   observeEvent(data_input(), {
     updateSelectInput(session, "satisfaction", choices= c('All', as.character(unique(data_input()$overallRating))))
   })
-  
-  
   
   
   ######################
@@ -244,7 +240,8 @@ function(input, output, session) {
       # add rating column
       agetable = agetable %>% 
         mutate(Rating = unique(data()$overallRating)) %>%
-        select(Rating, everything())
+        select(Rating, everything())%>%
+        mutate(Total = as.integer(rowSums(agetable)))
   })
   
   # Render table
@@ -493,6 +490,42 @@ function(input, output, session) {
     plotSatYear()
   })
   
+  
+  
+  ##########################################
+  # Create table for satisfaction per year #
+  ##########################################
+ 
+  # Create table variable
+  tableYear = reactive({
+    req(data_input())
+    df3 = tibble ()
+    for (i in 1:length(unique(data()$overallRating))){
+      for (j in 1:length(unique(data()$year))){
+        count = data() %>% 
+          select(Site,year,overallRating) %>%
+          filter(overallRating == unique(unfactor(overallRating))[i]) %>%
+          filter(year == unique(year)[j]) %>%
+          nrow()
+        df3[j,i] = count
+      }
+      colnames(df3) = unique(data()$year)
+    }
+    df3 %>%
+      mutate(Rating = unique(data()$overallRating)) %>%
+      select(Rating, everything()) %>%
+      mutate(Total = as.integer(rowSums(df3)))
+  })
+  
+  # render table
+  output$tableYEAR = renderTable({
+    if (is.null(data_input()))
+      return(NULL)
+    # call above variable
+    tableYear()
+  })
+  
+  
   ###############################
   # Satisfaction Per department #
   ###############################
@@ -611,6 +644,43 @@ function(input, output, session) {
     # call above variable
     plotSatDep()
   })
+  
+  
+  ################################
+  # Create table for Site counts #
+  ################################
+  
+  # Create variable
+  
+  tableSite = reactive({
+    req(data_input())
+    # Create empty dataframe 
+    df = tibble()
+    # fill table
+    for (i in 1:length(unique(data()$overallRating))){
+      for (j in 1:length(unique(data()$Site))){
+        count = data() %>% 
+          select(Site,overallRating) %>%
+          filter(overallRating == unique(unfactor(overallRating))[i]) %>%
+          filter(Site == unique(Site)[j]) %>%
+          nrow()
+        df[j,i] = count
+      }
+      colnames(df) = unique(data()$year)
+    }
+    df %>%
+      mutate(Site = unique(data()$Site)) %>%
+      select(Site, everything()) %>%
+      mutate(Total = as.integer(rowSums(df)))
+  })
+  
+  # Render table
+  output$tableSITE = renderTable({
+    if(is.null(data_input()))
+      return(NULL)
+    tableSite()
+  })
+  
   
   #######################
   # Count sample inputs #
