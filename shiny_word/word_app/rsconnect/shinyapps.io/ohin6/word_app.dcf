@@ -5,9 +5,9 @@ account: ohin6
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 6663781
-bundleId: 6120073
+bundleId: 6123582
 url: https://ohin6.shinyapps.io/word_app/
-when: 1658420331.87402
-lastSyncTime: 1658420331.87402
+when: 1658502301.93302
+lastSyncTime: 1658502301.93302
 asMultiple: FALSE
 asStatic: FALSE

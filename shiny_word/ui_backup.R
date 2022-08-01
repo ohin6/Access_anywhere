@@ -34,7 +34,8 @@ ui = fluidPage(
       # Create tabs for different plots
       tabsetPanel(
         # Age group - Panel
-        tabPanel('Age Group', plotOutput("ageGroupPlot")),
+        tabPanel('Age Group', plotOutput("ageGroupPlot"),
+                 tableOutput('agetable')),
         # Experience per year - Panel
         tabPanel('Per Year', plotOutput("perYear")),
         # Experience per department and site - Panel
