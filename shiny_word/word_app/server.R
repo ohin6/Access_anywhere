@@ -651,11 +651,11 @@ function(input, output, session) {
   ################################
   
   # Create variable
-  
   tableSite = reactive({
     req(data_input())
     # Create empty dataframe 
     df = tibble()
+    # fill values
     for (i in 1:length(unique(data()$Site))){
       for (j in 1:length(unique(data()$year))){
         count = data() %>% 
@@ -665,52 +665,35 @@ function(input, output, session) {
         df[i,j] = count
       }
     }
-  
+    
     # add column names
     colnames(df) = unique(data()$year)
-    df
+    
     # add column for site
-    df %>%
-      mutate(Site = unique(data()$Site)) %>%
-      # add total column
-      mutate(Total = as.integer(rowSums(df))) %>%
+    df2 = df %>%
+      mutate(`Total(count)` = as.integer(rowSums(df))) %>%
+      mutate(Site = unique(data()$Site))%>%
       select(Site, everything())
     
+    # Toggle between percent and count values
+    # Create function for converting to percentage 
+    scale2 <- function(x) ((x / rowSums(df)) * 100)
+    
+    # toggle based on input from radio button
+    if (input$sitePercent == 'Percent'){
+      #mutate across all but first  and last column to give percentage
+      df2 %>% mutate(across(2:(ncol(df2)-1), scale2))
+    } else
+      df2
   })
-    
-    
-    
-    
-    
-  #   
-  #   
-  #   df = tibble()
-  #   # fill table
-  #   for (i in 1:length(unique(data()$overallRating))){
-  #     for (j in 1:length(unique(data()$Site))){
-  #       count = data() %>% 
-  #         select(Site,overallRating) %>%
-  #         filter(overallRating == unique(unfactor(overallRating))[i]) %>%
-  #         filter(Site == unique(Site)[j]) %>%
-  #         nrow()
-  #       df[j,i] = count
-  #     }
-  #     colnames(df) = unique(data()$year)
-  #   }
-  #   df %>%
-  #     mutate(Site = unique(data()$Site)) %>%
-  #     select(Site, everything()) %>%
-  #     mutate(Total = as.integer(rowSums(df)))
-  # })
-  # 
+  
   # Render table
   output$tableSITE = renderTable({
     if(is.null(data_input()))
       return(NULL)
     tableSite()
   })
-  
-  
+
   #######################
   # Count sample inputs #
   #######################

@@ -82,10 +82,15 @@ ui = fluidPage(
                  
                  # Download button
                  downloadButton("downloadSatDep", "Download Plot"),
+                 hr(),
                  
                  # import table
-                 h3('Site Count'),
-                 tableOutput('tableSITE')
+                 h3('Table'),
+                 
+                 splitLayout(cellWidths = c("30%", "70%"), # side by side plot split
+                       radioButtons('sitePercent', label = 'Show table values as:', 
+                                    choices = list('Count', 'Percent'), selected = 'Count'),
+                       tableOutput('tableSITE'))
                  
         ),
         
