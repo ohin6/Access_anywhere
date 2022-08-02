@@ -500,12 +500,12 @@ function(input, output, session) {
   tableYear = reactive({
     req(data_input())
     df3 = tibble ()
-    for (i in 1:length(unique(data()$overallRating))){
-      for (j in 1:length(unique(data()$year))){
+    for (i in 1:length(unique(data()$year))){
+      for (j in 1:length(unique(data()$overallRating))){
         count = data() %>% 
           select(Site,year,overallRating) %>%
-          filter(overallRating == unique(unfactor(overallRating))[i]) %>%
-          filter(year == unique(year)[j]) %>%
+          filter(overallRating == unique(unfactor(overallRating))[j]) %>%
+          filter(year == unique(year)[i]) %>%
           nrow()
         df3[j,i] = count
       }
@@ -656,24 +656,53 @@ function(input, output, session) {
     req(data_input())
     # Create empty dataframe 
     df = tibble()
-    # fill table
-    for (i in 1:length(unique(data()$overallRating))){
-      for (j in 1:length(unique(data()$Site))){
+    for (i in 1:length(unique(data()$Site))){
+      for (j in 1:length(unique(data()$year))){
         count = data() %>% 
-          select(Site,overallRating) %>%
-          filter(overallRating == unique(unfactor(overallRating))[i]) %>%
-          filter(Site == unique(Site)[j]) %>%
+          filter(Site == unique(Site)[i],
+                 year == unique(year)[j]) %>%
           nrow()
-        df[j,i] = count
+        df[i,j] = count
       }
-      colnames(df) = unique(data()$year)
     }
+  
+    # add column names
+    colnames(df) = unique(data()$year)
+    df
+    # add column for site
     df %>%
       mutate(Site = unique(data()$Site)) %>%
-      select(Site, everything()) %>%
-      mutate(Total = as.integer(rowSums(df)))
+      # add total column
+      mutate(Total = as.integer(rowSums(df))) %>%
+      select(Site, everything())
+    
   })
-  
+    
+    
+    
+    
+    
+  #   
+  #   
+  #   df = tibble()
+  #   # fill table
+  #   for (i in 1:length(unique(data()$overallRating))){
+  #     for (j in 1:length(unique(data()$Site))){
+  #       count = data() %>% 
+  #         select(Site,overallRating) %>%
+  #         filter(overallRating == unique(unfactor(overallRating))[i]) %>%
+  #         filter(Site == unique(Site)[j]) %>%
+  #         nrow()
+  #       df[j,i] = count
+  #     }
+  #     colnames(df) = unique(data()$year)
+  #   }
+  #   df %>%
+  #     mutate(Site = unique(data()$Site)) %>%
+  #     select(Site, everything()) %>%
+  #     mutate(Total = as.integer(rowSums(df)))
+  # })
+  # 
   # Render table
   output$tableSITE = renderTable({
     if(is.null(data_input()))
