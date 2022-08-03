@@ -235,22 +235,41 @@ function(input, output, session) {
       # create data table variable
       agetable = tibble()
 
+      # # fill table value using loop 
+      # for (i in 1:length(unique(data()$ageGroup))){
+      #   for (j in 1:length(unique(data()$overallRating))){
+      #     count = data() %>%
+      #       select(ageGroup,overallRating) %>%
+      #       filter(overallRating == unique(unfactor(overallRating))[j]) %>%
+      #       filter(ageGroup == unique(unfactor(ageGroup))[i]) %>%
+      #       nrow()
+      #     agetable[j,i] = count
+      #   }
+      #   colnames(agetable) = unique(data()$ageGroup)
+      # }
+      
+      agetable = tibble()
+      index_i <- 1
       # fill table value using loop 
-      for (i in 1:length(unique(data()$ageGroup))){
-        for (j in 1:length(unique(data()$overallRating))){
+      for (i in sort(unique(data()$ageGroup))){
+        index_j <- 1 
+        for (j in sort(unique(data()$overallRating))){
           count = data() %>%
             select(ageGroup,overallRating) %>%
-            filter(overallRating == unique(unfactor(overallRating))[j]) %>%
-            filter(ageGroup == unique(unfactor(ageGroup))[i]) %>%
+            filter(overallRating == j) %>%
+            filter(ageGroup == i) %>%
             nrow()
-          agetable[j,i] = count
+          agetable[index_j,index_i] = as.integer(count)
+          index_j <- index_j +1 
+          colnames(agetable) = sort(unique(data()$ageGroup))
         }
-        colnames(agetable) = unique(data()$ageGroup)
+        index_i <- index_i +1 
       }
+      
       
       # add rating column
       agetable = agetable %>% 
-        mutate(Rating = unique(data()$overallRating)) %>%
+        mutate(Rating = sort(unique(data()$overallRating))) %>%
         select(Rating, everything())%>%
         mutate(Total = as.integer(rowSums(agetable)))
   })
