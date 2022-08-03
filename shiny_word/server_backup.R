@@ -1,11 +1,9 @@
 library(shiny)
 library(tidyverse)
-library(rms)
 require(lubridate)
 require(ggpubr)
 require(tidytext)
 require(tm)
-library(rms)
 require(stringr)
 require(igraph)
 require(ggraph)
@@ -21,7 +19,7 @@ function(input, output, session) {
   # Import and tidy data #
   ########################
   
-  data_input <- reactive({
+  data_input = reactive({
     #required input file from UI
     req(input$file1)
     # convert UI to CSV
@@ -76,19 +74,30 @@ function(input, output, session) {
   #######################################################
   # Dynamically identify unique values from each column #
   #######################################################
+  
+  
   # ageGroup
   observeEvent(data_input(), {
-    updateSelectInput(session, "ageGroup", choices= c('All', as.character(unique(data_input()$ageGroup))))
+    updateSelectInput(session, "ageGroup", choices= c('All', sort(as.character(unique(data_input()$ageGroup)))))
   })
   
   #Year
   observeEvent(data_input(), {
-    updateSelectInput(session, "Year", choices= c('All', unique(data_input()$year)))
+    updateSelectInput(session, "Year", choices= c('All', sort(unique(data_input()$year))))
   })
+  
+  
+  listOfMonths = function(months){
+    months = factor(months, levels = month.abb)
+    months = sort(months)
+    months = month.abb[months]
+    return(months)
+  }
+  
   
   # Month
   observeEvent(data_input(), {
-    updateSelectInput(session, "month", choices= c('All', as.character(unique(data_input()$month))))
+    updateSelectInput(session, "month", choices= c('All', listOfMonths(unique(data_input()$month))))
   })
   
   #Site
@@ -98,39 +107,37 @@ function(input, output, session) {
   
   # Department
   observeEvent(data_input(), {
-    updateSelectInput(session, "department", choices= c('All',unique(data_input()$department)))
+    updateSelectInput(session, "department", choices= c('All', sort(unique(data_input()$department))))
   })
   
   #satistfaction
   observeEvent(data_input(), {
-    updateSelectInput(session, "satisfaction", choices= c('All', as.character(unique(data_input()$overallRating))))
+    updateSelectInput(session, "satisfaction", choices= c('All', sort(as.character(unique(data_input()$overallRating)))))
   })
-  
-  
   
   
   ######################
   # Allow regex search #
   ######################
-  regex_input <- function(input){
+  regex_input = function(input){
     
-    search_string <- str_trim(input, side='both')
+    search_string = str_trim(input, side='both')
     # remove punctuation
     search_string = str_replace_all(search_string, "[^[:alnum:]]", " ")
     # split string into elements
-    search_string <- unlist(str_split(search_string,"\\s{1,5}"))
+    search_string = unlist(str_split(search_string,"\\s{1,5}"))
     
     
     # loop through string to add regex
-    search_input<-'\\b'
+    search_input='\\b'
     for (i in 1:length(search_string)){
-      search_input <- paste(search_input, search_string[i][1], "")
+      search_input = paste(search_input, search_string[i][1], "")
       if (i <= length(search_string) -1) {
-        search_input <- paste(search_input,'\\W+(?:\\w+\\W+){0,4}?',"")
+        search_input = paste(search_input,'\\W+(?:\\w+\\W+){0,4}?',"")
       }
     }
-    search_input <- paste(search_input,'\\b',"")
-    search_input <- str_replace_all(search_input, fixed(" "), "")
+    search_input = paste(search_input,'\\b',"")
+    search_input = str_replace_all(search_input, fixed(" "), "")
     return(search_input)
   }
   
@@ -140,7 +147,7 @@ function(input, output, session) {
   ################
   
   # Create table 
-  data <- reactive({
+  data = reactive({
     # required data variable (see above)
     req(data_input()) %>%
       # remove punctuation as this was causing issues in table
@@ -227,24 +234,29 @@ function(input, output, session) {
     req(data_input())
     # create data table variable
     agetable = tibble()
-    
+    index_i = 1 # create index to count loop
     # fill table value using loop 
-    for (i in 1:length(unique(data()$ageGroup))){
-      for (j in 1:length(unique(data()$overallRating))){
+    for (i in sort(unique(data()$ageGroup))){
+      index_j = 1 
+      for (j in sort(unique(data()$overallRating))){
         count = data() %>%
           select(ageGroup,overallRating) %>%
-          filter(overallRating == unique(unfactor(overallRating))[j]) %>%
-          filter(ageGroup == unique(unfactor(ageGroup))[i]) %>%
+          filter(overallRating == j) %>%
+          filter(ageGroup == i) %>%
           nrow()
-        agetable[j,i] = count
+        agetable[index_j,index_i] = as.integer(count)
+        index_j = index_j +1 
+        colnames(agetable) = sort(unique(data()$ageGroup))
       }
-      colnames(agetable) = unique(data()$ageGroup)
+      index_i = index_i +1 
     }
     
     # add rating column
     agetable = agetable %>% 
-      mutate(Rating = unique(data()$overallRating)) %>%
-      select(Rating, everything())
+      mutate(Rating = sort(unique(data()$overallRating))) %>%
+      select(Rating, everything())%>%
+      mutate(Total = as.integer(rowSums(agetable))) %>%
+      arrange(desc(Rating))
   })
   
   # Render table
@@ -253,6 +265,7 @@ function(input, output, session) {
       return(NULL)
     # read in function for tidied table
     df2()
+    
   })
   
   
@@ -395,14 +408,14 @@ function(input, output, session) {
       separate(trigram, c('word1', 'word2'), ' ')
     
     # bigram connections
-    bigram_graph <- Bigram %>%
+    bigram_graph = Bigram %>%
       count(biwords, sort = TRUE) %>%
       separate(biwords, c('word1', 'word2'), ' ') %>%
       filter(n > 7) %>%
       graph_from_data_frame()
     
     #plot igraph
-    a <- grid::arrow(type = "closed", length = unit(.1, "inches"))
+    a = grid::arrow(type = "closed", length = unit(.1, "inches"))
     set.seed(1)
     ggraph(bigram_graph, layout = "fr") +
       geom_edge_link(aes(edge_alpha = n), show.legend = TRUE,
@@ -492,6 +505,49 @@ function(input, output, session) {
     # call above variable
     plotSatYear()
   })
+  
+  
+  
+  ##########################################
+  # Create table for satisfaction per year #
+  ##########################################
+  
+  # Create table variable
+  tableYear = reactive({
+    req(data_input())
+    df3 = tibble()
+    index_i = 1
+    # fill table value using loop 
+    for (i in sort(unique(data()$year))){
+      index_j = 1 
+      for (j in sort(unique(data()$overallRating))){
+        count = data() %>%
+          select(year,year,overallRating) %>%
+          filter(overallRating == j) %>%
+          filter(year == i) %>%
+          nrow()
+        df3[index_j,index_i] = as.integer(count)
+        index_j = index_j +1 
+        colnames(df3) = sort(unique(data()$year))
+      }
+      index_i = index_i +1 
+    }
+    df3 %>%
+      mutate(Rating = sort(unique(data()$overallRating))) %>%
+      select(Rating, everything()) %>%
+      mutate(Total = as.integer(rowSums(df3))) %>%
+      arrange(desc(Rating))
+  })
+  
+  
+  # render table
+  output$tableYEAR = renderTable({
+    if (is.null(data_input()))
+      return(NULL)
+    # call above variable
+    tableYear()
+  })
+  
   
   ###############################
   # Satisfaction Per department #
@@ -612,6 +668,55 @@ function(input, output, session) {
     plotSatDep()
   })
   
+  
+  ################################
+  # Create table for Site counts #
+  ################################
+  
+  # Create variable
+  tableSite = reactive({
+    req(data_input())
+    # Create empty dataframe 
+    df = tibble()
+    # fill values
+    for (i in 1:length(unique(data()$Site))){
+      for (j in 1:length(unique(data()$year))){
+        count = data() %>% 
+          filter(Site == unique(Site)[i],
+                 year == unique(year)[j]) %>%
+          nrow()
+        df[i,j] = count
+      }
+    }
+    
+    # add column names
+    colnames(df) = unique(data()$year)
+    
+    # add column for site
+    df2 = df %>%
+      mutate(`Total(count)` = as.integer(rowSums(df))) %>%
+      mutate(Site = unique(data()$Site))%>%
+      select(Site, everything())
+    
+    # Toggle between percent and count values
+    # Create function for converting to percentage 
+    scale2 = function(x) ((x / rowSums(df)) * 100)
+    
+    # toggle based on input from radio button
+    if (input$sitePercent == 'Percent'){
+      #mutate across all but first  and last column to give percentage
+      df2 %>% mutate(across(2:(ncol(df2)-1), scale2))
+    } else
+      df2
+  })
+  
+  # Render table
+  output$tableSITE = renderTable({
+    if(is.null(data_input()))
+      return(NULL)
+    tableSite()
+  })
+  
   #######################
   # Count sample inputs #
   #######################
@@ -640,7 +745,7 @@ function(input, output, session) {
   ####################
   
   # Data Table
-  output$downloadData <- downloadHandler(
+  output$downloadData = downloadHandler(
     filename = function() {
       paste("dataTable-", Sys.Date(), ".csv", sep="")
     },
@@ -654,7 +759,7 @@ function(input, output, session) {
       paste("AgeGroup-", Sys.Date(), ".png", sep="")
     },
     content = function(file) {
-      device <- function(..., width, height) {
+      device = function(..., width, height) {
         grDevices::png(..., width = width, height = height,
                        res = 300, units = "in")
       }
@@ -667,7 +772,7 @@ function(input, output, session) {
       paste("Bigram-", Sys.Date(), ".png", sep="")
     },
     content = function(file) {
-      device <- function(..., width, height) {
+      device = function(..., width, height) {
         grDevices::png(..., width = width, height = height,
                        res = 300, units = "in")
       }
@@ -680,7 +785,7 @@ function(input, output, session) {
       paste("Trigram-", Sys.Date(), ".png", sep="")
     },
     content = function(file) {
-      device <- function(..., width, height) {
+      device = function(..., width, height) {
         grDevices::png(..., width = width, height = height,
                        res = 300, units = "in")
       }
@@ -693,7 +798,7 @@ function(input, output, session) {
       paste("igraph-", Sys.Date(), ".png", sep="")
     },
     content = function(file) {
-      device <- function(..., width, height) {
+      device = function(..., width, height) {
         grDevices::png(..., width = width, height = height,
                        res = 300, units = "in")
       }
@@ -706,7 +811,7 @@ function(input, output, session) {
       paste("SatYear-", Sys.Date(), ".png", sep="")
     },
     content = function(file) {
-      device <- function(..., width, height) {
+      device = function(..., width, height) {
         grDevices::png(..., width = width, height = height,
                        res = 300, units = "in")
       }
@@ -719,7 +824,7 @@ function(input, output, session) {
       paste("SatDep-", Sys.Date(), ".png", sep="")
     },
     content = function(file) {
-      device <- function(..., width, height) {
+      device = function(..., width, height) {
         grDevices::png(..., width = width, height = height,
                        res = 300, units = "in")
       }

@@ -5,9 +5,10 @@ account: ohin6
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 6663781
-bundleId: 6157941
+bundleId: 6162197
 url: https://ohin6.shinyapps.io/word_app/
-when: 1659450275.635
-lastSyncTime: 1659450275.63502
+when: 1659539940.43758
+lastSyncTime: 1659539940.43758
 asMultiple: FALSE
 asStatic: FALSE
+ignoredFiles: All Video Consultation Feedback.csv
