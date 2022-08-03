@@ -74,19 +74,30 @@ function(input, output, session) {
   #######################################################
   # Dynamically identify unique values from each column #
   #######################################################
+
+                                    
   # ageGroup
   observeEvent(data_input(), {
-    updateSelectInput(session, "ageGroup", choices= c('All', as.character(unique(data_input()$ageGroup))))
+    updateSelectInput(session, "ageGroup", choices= c('All', sort(as.character(unique(data_input()$ageGroup)))))
   })
   
   #Year
   observeEvent(data_input(), {
-    updateSelectInput(session, "Year", choices= c('All', unique(data_input()$year)))
+    updateSelectInput(session, "Year", choices= c('All', sort(unique(data_input()$year))))
   })
+  
+
+  listOfMonths <- function(months){
+    months <- factor(months, levels = month.abb)
+    months <- sort(months)
+    months <- month.abb[months]
+    return(months)
+    }
+  
   
   # Month
   observeEvent(data_input(), {
-    updateSelectInput(session, "month", choices= c('All', as.character(unique(data_input()$month))))
+    updateSelectInput(session, "month", choices= c('All', listOfMonths(unique(data_input()$month))))
   })
   
   #Site
@@ -96,12 +107,12 @@ function(input, output, session) {
   
   # Department
   observeEvent(data_input(), {
-    updateSelectInput(session, "department", choices= c('All',unique(data_input()$department)))
+    updateSelectInput(session, "department", choices= c('All', sort(unique(data_input()$department))))
   })
   
   #satistfaction
   observeEvent(data_input(), {
-    updateSelectInput(session, "satisfaction", choices= c('All', as.character(unique(data_input()$overallRating))))
+    updateSelectInput(session, "satisfaction", choices= c('All', sort(as.character(unique(data_input()$overallRating)))))
   })
   
   
