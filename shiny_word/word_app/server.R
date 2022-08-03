@@ -527,25 +527,52 @@ function(input, output, session) {
   ##########################################
  
   # Create table variable
+  # tableYear = reactive({
+  #   req(data_input())
+  #   df3 = tibble ()
+  #   for (i in 1:length(unique(data()$year))){
+  #     for (j in 1:length(unique(data()$overallRating))){
+  #       count = data() %>% 
+  #         select(Site,year,overallRating) %>%
+  #         filter(overallRating == unique(unfactor(overallRating))[j]) %>%
+  #         filter(year == unique(year)[i]) %>%
+  #         nrow()
+  #       df3[j,i] = count
+  #     }
+  #     colnames(df3) = unique(data()$year)
+  #   }
+  #   df3 %>%
+  #     mutate(Rating = unique(data()$overallRating)) %>%
+  #     select(Rating, everything()) %>%
+  #     mutate(Total = as.integer(rowSums(df3)))
+  # })
+
   tableYear = reactive({
-    req(data_input())
-    df3 = tibble ()
-    for (i in 1:length(unique(data()$year))){
-      for (j in 1:length(unique(data()$overallRating))){
-        count = data() %>% 
-          select(Site,year,overallRating) %>%
-          filter(overallRating == unique(unfactor(overallRating))[j]) %>%
-          filter(year == unique(year)[i]) %>%
-          nrow()
-        df3[j,i] = count
-      }
-      colnames(df3) = unique(data()$year)
+  req(data_input())
+  df3 = tibble()
+  index_i <- 1
+  # fill table value using loop 
+  for (i in sort(unique(data()$year))){
+    index_j <- 1 
+    for (j in sort(unique(data()$overallRating))){
+      count = data() %>%
+        select(year,year,overallRating) %>%
+        filter(overallRating == j) %>%
+        filter(year == i) %>%
+        nrow()
+      df3[index_j,index_i] = as.integer(count)
+      index_j <- index_j +1 
+      colnames(df3) = sort(unique(data()$year))
     }
-    df3 %>%
-      mutate(Rating = unique(data()$overallRating)) %>%
-      select(Rating, everything()) %>%
-      mutate(Total = as.integer(rowSums(df3)))
-  })
+    index_i <- index_i +1 
+  }
+  df3 %>%
+        mutate(Rating = sort(unique(data()$overallRating))) %>%
+        select(Rating, everything()) %>%
+        mutate(Total = as.integer(rowSums(df3)))
+    })
+  
+  
   
   # render table
   output$tableYEAR = renderTable({
